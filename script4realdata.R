@@ -3,7 +3,7 @@ library(datashieldclient)
 
 
 # LOAD THE TABLE THAT CONTAINS THE LOGIN INFO
-load("logindata4bioshare.rda")
+load("~/workshop-barcelona/logindata4bioshare.rda")
 
 
 # LOGIN TO COLLABORATING SERVERS AND ASSIGN DATA
