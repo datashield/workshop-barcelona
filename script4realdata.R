@@ -12,8 +12,8 @@ myvar <- list("DIS_CVA","MEDI_LPD","DIS_DIAB","DIS_AMI","GENDER","PM_BMI_CATEGOR
               "LAB_TSC","LAB_HDL","LAB_GLUC_FASTING","PM_BMI_CONTINUOUS")
 
 # run the command to login and assign data
-ld <- logindata[c(1,2,5,6,7,8),]
-opals <- datashield.login(logins=ld, assign=TRUE, variables=myvar)
+#ld <- logindata[c(1,2,5,6,7,8),]
+opals <- datashield.login(logins=logindata, assign=TRUE, variables=myvar)
 
 # get the total number of participants
 sum(unlist(datashield.aggregate(opals,"length(D$GENDER)")))
