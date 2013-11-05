@@ -2,21 +2,12 @@
 library(dsbaseclient)
 library(dsmodellingclient)
 
-
-
-
 # LOAD THE TABLE THAT CONTAINS THE LOGIN INFO
-load("logindata4test.rda")
+load("~/workshop-barcelona/logindata.rda")
 
 
 # LOGIN TO COLLABORATING SERVERS AND ASSIGN DATA
-# the variables to assign
-myvar <- list("DIS_CVA","MEDI_LPD","DIS_DIAB","DIS_AMI","GENDER","PM_BMI_CATEGORIAL",
-              "LAB_TSC","LAB_HDL","LAB_GLUC_FASTING","PM_BMI_CONTINUOUS")
-
-# run the command to login and assign data
-#ld <- logindata[c(1,2,5,6,7,8),]
-opals <- datashield.login(logins=logindata, assign=TRUE, variables=myvar)
+opals <- datashield.login(logins=logindata, assign=TRUE)
 
 # get the total number of participants
 sum(unlist(datashield.aggregate(opals,"length(D$GENDER)")))
@@ -38,7 +29,7 @@ ds.quantilemean(datasources=opals, xvect=quote(D$LAB_TSC), type="split")
 ds.quantilemean(datasources=opals, xvect=quote(D$LAB_HDL))
 ds.quantilemean(datasources=opals, xvect=quote(D$LAB_HDL), type="split")
 ds.quantilemean(datasources=opals, xvect=quote(D$PM_BMI_CONTINUOUS), type="split")
-ds.quantilemean(datasources=opals, xvect=quote(D$LAB_GLUC_FASTING))
+ds.quantilemean(datasources=opals, xvect=quote(D$LAB_GLUC_ADJUSTED))
 
 # plot histograms
 ds.histogram(datasources=opals, xvect=quote(D$LAB_HDL))
@@ -46,6 +37,9 @@ ds.histogram(datasources=opals, xvect=quote(D$LAB_HDL), type="split")
 ds.histogram(datasources=opals, xvect=quote(D$PM_BMI_CONTINUOUS))
 ds.histogram(datasources=opals, xvect=quote(D$PM_BMI_CONTINUOUS), type="split")
 
+# subset the data by GENDER
+#ds.subsetdata(opals, "D", list("GENDER"))
+ds.subsetdata(opals, "D", list(10))
 
 # ANSWERING SOME QUESTIONS
 
