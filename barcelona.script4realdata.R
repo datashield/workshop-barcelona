@@ -33,26 +33,59 @@ load("~/workshop-barcelona/logindata4bioshare.rda")
 # LOGIN TO COLLABORATING SERVERS AND ASSIGN DATA
 # the variables to assign
 myvar <- list("DIS_CVA","MEDI_LPD","DIS_DIAB","DIS_AMI","GENDER","PM_BMI_CATEGORIAL",
-              "LAB_TSC","LAB_HDL","LAB_GLUC_FASTING","PM_BMI_CONTINUOUS")
+              "LAB_TSC","LAB_HDL","LAB_GLUC_FASTING","PM_BMI_CONTINUOUS",
+              "AGE_YRS")
 
 # run the command to login and assign data
 #SELECT OR EXCLUDE SERVERS TO USE
 server.names<-logindata[,1]
+#opals <- datashield.login(logins=logindata[(server.names=="ncds"|server.names=="prevend"|server.names=="lifelines"|
+#                                server.names=="finrisk"|server.names=="kora"),], assign=TRUE, variables=myvar)
+
+
 opals <- datashield.login(logins=logindata[(server.names=="ncds"|server.names=="prevend"|
-                                server.names=="finrisk"|server.names=="kora"),], assign=TRUE, variables=myvar)
+                                              server.names=="finrisk"|server.names=="kora"),], assign=TRUE, variables=myvar)
+
+
 
 # get the total number of participants by study and overall
 ds.length(opals,xvect=quote(D$GENDER),type="split")
 ds.length(opals,xvect=quote(D$GENDER),type="combine")
 
-#sum(unlist(datashield.aggregate(opals,"length(D$GENDER)")))
 
-ds.propMean(opals,quote(D),outvar=quote(D$LAB_HDL),covar1=quote(D$GENDER))
+
+ds.histogram(opals,quote(D$LAB_HDL))
+ds.heatmapplot(opals,quote(D$AGE_YRS),quote(D$LAB_HDL),type="split")
+ds.contourplot(opals,quote(D$AGE_YRS),quote(D$LAB_HDL),type="split")
+ds.heatmapplot(opals,quote(D$PM_BMI_CONTINUOUS),quote(D$LAB_GLUC_FASTING),type="split")
+ds.contourplot(opals,quote(D$PM_BMI_CONTINUOUS),quote(D$LAB_GLUC_FASTING),type="split")
+ds.heatmapplot(opals,quote(D$PM_BMI_CONTINUOUS),quote(D$LAB_GLUC_FASTING))
+ds.contourplot(opals,quote(D$PM_BMI_CONTINUOUS),quote(D$LAB_GLUC_FASTING))
+
+glm0a <- ds.glm(datasources=opals, formula=D$LAB_GLUC_FASTING ~ D$AGE_YRS+D$GENDER+D$PM_BMI_CATEGORIAL+D$LAB_TSC+D$LAB_HDL, family=quote(gaussian), maxit=quote(20))
+glm0a
+
+glm0b <- ds.glm(datasources=opals1245, formula=D$DIS_DIAB ~ D$AGE_YRS+D$GENDER+D$PM_BMI_CATEGORIAL+D$LAB_TSC+D$LAB_HDL, family=quote(binomial), maxit=quote(20))
+glm0b
+
+means.hdl.gender<-ds.propMean(opals,quote(D),outvar=quote(D$LAB_HDL),covar1=quote(D$GENDER))
+means.hdl.gender
 ds.names(opals,quote(GENDER$GENDER.level_0))
 ds.names(opals,quote(GENDER$GENDER.level_1))
 
-ds.mean(opals,quote(GENDER$GENDER.level_0$LAB_HDL))
-ds.mean(opals,quote(GENDER$GENDER.level_1$LAB_HDL))
+
+
+datashield.assign(opals,"G0",quote(GENDER$GENDER.level_0))
+datashield.assign(opals,"G1",quote(GENDER$GENDER.level_1))
+
+ds.names(opals,quote(G0))
+ds.names(opals,quote(G1))
+
+ds.mean(opals,quote(G0$LAB_HDL))
+ds.mean(opals,quote(G1$LAB_HDL))
+
+glm1a <- ds.glm(datasources=opals, formula=D$LAB_HDL ~ D$GENDER, family=quote(gaussian), maxit=quote(20))
+glm1a
 
 glm1 <- ds.glm(datasources=opals, formula=D$LAB_HDL ~ D$GENDER-1, family=quote(gaussian), maxit=quote(20))
 glm1
@@ -72,7 +105,71 @@ ds.table2d(opals,quote(D$DIS_DIAB),quote(D$GENDER))
 glm2 <- ds.glm(datasources=opals, formula=D$DIS_DIAB ~ D$GENDER-1, family=quote(binomial), maxit=quote(20))
 glm2
 
+lor2p.ci(-3.1867,0.0492)
+lor2p.ci(-3.6001,0.0575)
 
+glm3 <- ds.glm(datasources=opals, formula=D$DIS_DIAB ~ D$PM_BMI_CATEGORIAL-1, family=quote(binomial), maxit=quote(20))
+glm3
+
+ds.propMean(opals,quote(D),outvar=quote(D$DIS_DIAB),covar1=quote(D$PM_BMI_CATEGORIAL))
+
+glm4 <- ds.glm(datasources=opals, formula=D$LAB_TSC ~ D$GENDER:D$PM_BMI_CATEGORIAL-1, family=quote(gaussian), maxit=quote(20))
+glm4
+
+#ds.propMean(opals,quote(GENDER$GENDER.level_0),outvar=quote(GENDER$GENDER.level_0$DIS_DIAB),covar1=quote(GENDER$GENDER.level_0$PM_BMI_CATEGORIAL))
+
+
+ds.names(opals,quote(G0))
+ds.names(opals,quote(G1))
+
+ds.propMean(opals,quote(G0),outvar=quote(G0$LAB_TSC),covar1=quote(G0$PM_BMI_CATEGORIAL))
+ds.propMean(opals,quote(G1),outvar=quote(G1$LAB_TSC),covar1=quote(G1$PM_BMI_CATEGORIAL))
+
+
+
+glm5 <- ds.glm(datasources=opals, formula=D$DIS_DIAB ~ D$GENDER:D$PM_BMI_CATEGORIAL-1, family=quote(binomial), maxit=quote(20))
+glm5
+
+
+datashield.assign(opals,"G0",quote(GENDER$GENDER.level_0))
+datashield.assign(opals,"G1",quote(GENDER$GENDER.level_1))
+
+ds.names(opals,quote(G0))
+ds.names(opals,quote(G1))
+
+ds.propMean(opals,quote(G0),outvar=quote(G0$DIS_DIAB),covar1=quote(G0$PM_BMI_CATEGORIAL))
+ds.propMean(opals,quote(G1),outvar=quote(G1$DIS_DIAB),covar1=quote(G1$PM_BMI_CATEGORIAL))
+
+
+ds.createfactor(opals,xvect=quote(D$AGE_YRS_CATEGORICAL))
+
+ds.levels(opals,xvect=quote(D$AGE_YRS_CATEGORICAL))
+
+
+opals23<-opals[2:3]
+glm6 <- ds.glm(datasources=opals23, formula=D$DIS_DIAB ~ D$AGE_YRS_CATEGORICAL-1, family=quote(binomial), maxit=quote(20))
+glm6
+
+glm7 <- ds.glm(datasources=opals23, formula=D$LAB_GLUC_FASTING ~ D$AGE_YRS_CATEGORICAL-1, family=quote(gaussian), maxit=quote(20))
+glm7
+
+glm8 <- ds.glm(datasources=opals23, formula=D$LAB_HDL ~ D$AGE_YRS_CATEGORICAL-1, family=quote(gaussian), maxit=quote(20))
+glm8
+
+ds.propMean(opals23,quote(D),outvar=quote(D$DIS_DIAB),covar1=quote(D$AGE_YRS_CATEGORICAL))
+
+
+
+ds.table2d(opals,quote(D$AGE_YRS),quote(D$AGE_YRS_CATEGORICAL))
+
+
+ds.subsetvar(opals23,xvect=quote(D$AGE_YRS),threshold=30,operator='<')
+
+
+
+ds.propMean(opals,quote(D),outvar=quote(D$DIS_DIAB),covar1=quote(D$AGE_YRS_CATEGORICAL))
+
+ds.class(opals,quote(D$AGE_YRS))
 
 # LOOK AT UNIVARIATE DISTRIBUTION IN MORE DETAIL
 
